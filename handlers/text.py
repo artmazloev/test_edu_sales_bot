@@ -1,9 +1,12 @@
 import random
 import logging
-from telegram import Update
+from io import BytesIO
+from telegram import Update, InputFile
 from telegram.ext import ContextTypes
 from state import manager as state_manager
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
+from services.openai_client import speak
+from services.audio import mp3_to_ogg
 from keyboards import training_keyboard, mode_keyboard, scenario_keyboard
 from phrases import THINKING_PHRASES
 
@@ -64,7 +67,32 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
 
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
-    reply = await get_buyer_reply(state, text)
+    reply_text = await get_buyer_reply(state, text)
     await thinking_msg.delete()
 
-    await update.message.reply_text(reply, reply_markup=training_keyboard())
+    # Text input → audio + text caption
+    try:
+        mp3_bytes = await speak(reply_text)
+        ogg_reply = mp3_to_ogg(mp3_bytes)
+        await context.bot.send_voice(
+            chat_id=update.effective_chat.id,
+            voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
+            caption=f"🤖 {reply_text}",
+            reply_markup=training_keyboard(),
+        )
+    except Exception as e:
+        is_forbidden = "voice_messages_forbidden" in str(e).lower()
+        if is_forbidden:
+            logger.warning("text | send_voice forbidden for user_id=%d", user_id)
+            await update.message.reply_text(
+                "⚠️ У вас отключено получение голосовых сообщений от ботов.\n\n"
+                "Можно:\n"
+                "• Продолжить тренировку *текстом* — просто пишите в чат\n"
+                "• Включить голос: Настройки → Конфиденциальность → Голосовые сообщения → Все\n\n"
+                f"🤖 {reply_text}",
+                parse_mode="Markdown",
+                reply_markup=training_keyboard(),
+            )
+        else:
+            logger.exception("text | send_voice failed for user_id=%d", user_id)
+            await update.message.reply_text(reply_text, reply_markup=training_keyboard())

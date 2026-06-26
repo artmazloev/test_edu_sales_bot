@@ -48,7 +48,6 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await context.bot.send_voice(
             chat_id=update.effective_chat.id,
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
-            caption=f"🤖 Покупатель: {reply_text}",
             reply_markup=training_keyboard(),
         )
     except Exception as e:
@@ -59,14 +58,10 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 "⚠️ У вас отключено получение голосовых сообщений от ботов.\n\n"
                 "Можно:\n"
                 "• Продолжить тренировку *текстом* — просто пишите в чат\n"
-                "• Включить голос: Настройки → Конфиденциальность → Голосовые сообщения → Все\n\n"
-                f"🤖 Покупатель: {reply_text}",
+                "• Включить голос: Настройки → Конфиденциальность → Голосовые сообщения → Все",
                 parse_mode="Markdown",
                 reply_markup=training_keyboard(),
             )
         else:
             logger.exception("voice | send_voice failed for user_id=%d", user_id)
-            await update.message.reply_text(
-                f"🤖 Покупатель: {reply_text}",
-                reply_markup=training_keyboard(),
-            )
+            await update.message.reply_text(reply_text, reply_markup=training_keyboard())

@@ -1,5 +1,17 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from config import SCENARIOS
+
+
+def main_reply_keyboard() -> ReplyKeyboardMarkup:
+    """Persistent bottom keyboard shown throughout the session."""
+    return ReplyKeyboardMarkup(
+        [
+            [KeyboardButton("📊 Обратная связь"), KeyboardButton("🔄 Сменить сценарий")],
+            [KeyboardButton("🔁 Сбросить диалог")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Скажите что-нибудь покупателю...",
+    )
 
 
 def mode_keyboard() -> InlineKeyboardMarkup:

@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 from config import SCENARIOS
 from state import manager as state_manager
 from services.dialogue import get_coaching_feedback
-from keyboards import mode_keyboard, scenario_keyboard, training_keyboard
+from keyboards import mode_keyboard, scenario_keyboard, training_keyboard, main_reply_keyboard
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "👋 Привет! Я бот для тренировки навыков продаж.\n\n"
         "🎯 Отправляйте голосовые или текстовые сообщения — я буду играть роль покупателя.\n"
-        "📊 В любой момент нажмите *«Получить обратную связь»* — тренер разберёт ваш диалог.\n\n"
+        "📊 В любой момент нажмите *«Обратная связь»* — тренер разберёт ваш диалог.\n\n"
         "Выберите сценарий:",
         parse_mode="Markdown",
+        reply_markup=main_reply_keyboard(),
+    )
+    await update.message.reply_text(
+        "Выберите сценарий:",
         reply_markup=scenario_keyboard(),
     )
 

@@ -3,7 +3,7 @@ from telegram import Update, BotCommand
 from telegram.ext import ContextTypes
 from config import SCENARIOS
 from state import manager as state_manager
-from services.dialogue import get_coaching_feedback
+from services.dialogue import get_coaching_feedback, get_buyer_opener
 from keyboards import mode_keyboard, scenario_keyboard, main_reply_keyboard
 
 logger = logging.getLogger(__name__)
@@ -73,9 +73,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.message.reply_text(
             f"✅ Сценарий: *{scenario['name']}*\n"
             f"Покупатель: _{scenario['buyer_role']}_\n\n"
-            "Напишите первое сообщение покупателю или отправьте голосовое 🎙",
+            "Покупатель уже в магазине 👇",
             parse_mode="Markdown",
         )
+        await query.message.reply_chat_action("typing")
+        opener = await get_buyer_opener(state)
+        await query.message.reply_text(f"🛒 *Покупатель:* {opener}", parse_mode="Markdown")
 
     elif data.startswith("mode:"):
         new_mode = data.split(":", 1)[1]

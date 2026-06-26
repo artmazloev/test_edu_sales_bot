@@ -8,6 +8,28 @@ from services.openai_client import chat
 logger = logging.getLogger(__name__)
 
 
+async def get_buyer_opener(state: UserState) -> str:
+    """Generate the buyer's opening remark to kick off the scenario."""
+    scenario = SCENARIOS[state.scenario_key]
+    system_prompt = build_buyer_prompt(
+        product=scenario["product"],
+        buyer_role=scenario["buyer_role"],
+        typical_objections=scenario["typical_objections"],
+    )
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": (
+            "Ты только что вошёл в магазин электроники. Продавец ещё не подошёл. "
+            "Произнеси одну короткую фразу (1–2 предложения), которая показывает, что ты чем-то интересуешься или просто осматриваешься. "
+            "Не раскрывай сразу всех деталей — просто дай продавцу повод подойти."
+        )},
+    ]
+    opener = await chat(messages)
+    state.history.append({"role": "assistant", "content": opener})
+    logger.info("buyer_opener | scenario=%s", state.scenario_key)
+    return opener
+
+
 async def get_buyer_reply(state: UserState, user_message: str) -> str:
     scenario = SCENARIOS[state.scenario_key]
     system_prompt = build_buyer_prompt(

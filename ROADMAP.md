@@ -22,6 +22,9 @@
 | [#11](https://github.com/artmazloev/test_edu_sales_bot/issues/11) | Реакция покупателя на молчание >2 мин через JobQueue |
 | [#13](https://github.com/artmazloev/test_edu_sales_bot/issues/13) | Кнопка «Переиграть сценарий» после коучинга |
 | [#16](https://github.com/artmazloev/test_edu_sales_bot/issues/16) | Расширенная ОС: до 3 ошибок с цитатами и альтернативами |
+| [#19](https://github.com/artmazloev/test_edu_sales_bot/issues/19) | Голос покупателя по полу сценария (onyx/nova) + tts-1-hd |
+| [#20](https://github.com/artmazloev/test_edu_sales_bot/issues/20) | Переключение LLM на gpt-4o + MODELS.md с инструкцией отката |
+| [#21](https://github.com/artmazloev/test_edu_sales_bot/issues/21) | Фикс: кнопки Reply Keyboard уходили в диалог с покупателем |
 | —  | Фоллбэк на текст при заблокированных голосовых + инструкция |
 | —  | Текст → аудио+подпись; голос → только аудио |
 | —  | Два сценария: премиум-смартфон (технарь) и смартфон в подарок |

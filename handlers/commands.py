@@ -73,8 +73,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.message.reply_text(
             f"✅ Сценарий: *{scenario['name']}*\n"
             f"Покупатель: _{scenario['buyer_role']}_\n\n"
-            "🎙 Нажмите на *микрофон* в поле ввода и запишите первое сообщение покупателю.\n"
-            "Или просто напишите текст, если голос недоступен.",
+            "Напишите первое сообщение покупателю или отправьте голосовое 🎙",
             parse_mode="Markdown",
         )
 

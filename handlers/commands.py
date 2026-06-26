@@ -1,20 +1,23 @@
-from telegram import Update
+import logging
+from telegram import Update, BotCommand
 from telegram.ext import ContextTypes
 from config import SCENARIOS
 from state import manager as state_manager
 from services.dialogue import get_coaching_feedback
-from keyboards import mode_keyboard, scenario_keyboard
+from keyboards import mode_keyboard, scenario_keyboard, training_keyboard
+
+logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     state_manager.reset(user_id)
+    logger.info("start | user_id=%d", user_id)
     await update.message.reply_text(
         "👋 Привет! Я бот для тренировки навыков продаж.\n\n"
-        "🎯 *Режим тренировки* — я играю роль покупателя, вы продаёте мне продукт. "
-        "Общайтесь голосом или текстом.\n\n"
-        "📚 *Режим коучинга* — я анализирую ваш диалог и даю обратную связь.\n\n"
-        "Выберите сценарий для начала:",
+        "🎯 Отправляйте голосовые или текстовые сообщения — я буду играть роль покупателя.\n"
+        "📊 В любой момент нажмите *«Получить обратную связь»* — тренер разберёт ваш диалог.\n\n"
+        "Выберите сценарий:",
         parse_mode="Markdown",
         reply_markup=scenario_keyboard(),
     )
@@ -23,8 +26,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     state_manager.reset(user_id)
+    logger.info("reset | user_id=%d", user_id)
     await update.message.reply_text(
-        "🔄 Диалог сброшен. Начните новую тренировку!",
+        "🔄 Диалог сброшен. Выберите сценарий для новой тренировки:",
         reply_markup=scenario_keyboard(),
     )
 
@@ -32,8 +36,10 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     state = state_manager.get_or_create(user_id)
+    logger.info("feedback | user_id=%d turns=%d", user_id, state.turn_count)
     await update.message.reply_text("⏳ Анализирую диалог...")
     fb = await get_coaching_feedback(state)
+    state.mode = "coaching"
     await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
 
 
@@ -44,7 +50,13 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     state = state_manager.get_or_create(user_id)
     data = query.data
 
-    if data.startswith("scenario:"):
+    if data == "show:scenarios":
+        await query.message.reply_text(
+            "Выберите сценарий (текущий диалог будет сброшен):",
+            reply_markup=scenario_keyboard(),
+        )
+
+    elif data.startswith("scenario:"):
         key = data.split(":", 1)[1]
         if key not in SCENARIOS:
             await query.message.reply_text("Неизвестный сценарий.")
@@ -53,11 +65,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         state = state_manager.get_or_create(user_id)
         state.scenario_key = key
         scenario = SCENARIOS[key]
+        logger.info("scenario | user_id=%d key=%s", user_id, key)
         await query.message.reply_text(
-            f"✅ Выбран сценарий: *{scenario['name']}*\n"
-            f"Продукт: {scenario['product']}\n"
-            f"Покупатель: {scenario['buyer_role']}\n\n"
-            "Я в роли покупателя. Начинайте продавать — отправьте голосовое или текстовое сообщение!",
+            f"✅ Сценарий: *{scenario['name']}*\n"
+            f"Покупатель: _{scenario['buyer_role']}_\n\n"
+            "Начинайте — отправьте голосовое или текстовое сообщение!",
             parse_mode="Markdown",
         )
 
@@ -66,17 +78,26 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if new_mode == "coaching":
             if state.turn_count == 0:
                 await query.message.reply_text(
-                    "Сначала проведите диалог в режиме тренировки, отправив несколько сообщений покупателю."
+                    "Сначала проведите несколько реплик в тренировке, потом запросите обратную связь."
                 )
                 return
             state.mode = "coaching"
             state.coaching_started = False
+            logger.info("mode:coaching | user_id=%d turns=%d", user_id, state.turn_count)
             await query.message.reply_text("⏳ Анализирую диалог...")
             fb = await get_coaching_feedback(state)
             await query.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         else:
             state.mode = "training"
+            logger.info("mode:training | user_id=%d", user_id)
             await query.message.reply_text(
-                "🎯 Режим тренировки активирован. Продолжайте диалог с покупателем!",
-                reply_markup=None,
+                "🎯 Продолжаем тренировку. Отправьте сообщение покупателю!",
             )
+
+
+async def setup_commands(app) -> None:
+    await app.bot.set_my_commands([
+        BotCommand("start", "Начать заново / выбрать сценарий"),
+        BotCommand("feedback", "Получить обратную связь по диалогу"),
+        BotCommand("reset", "Сбросить диалог"),
+    ])

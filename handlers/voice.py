@@ -8,7 +8,7 @@ from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
-from keyboards import feedback_nudge_keyboard, mode_keyboard
+from keyboards import training_keyboard, mode_keyboard
 from phrases import THINKING_PHRASES
 
 logger = logging.getLogger(__name__)
@@ -42,10 +42,6 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     reply_text = await get_buyer_reply(state, transcript)
     await thinking_msg.delete()
 
-    markup = None
-    if state.turn_count > 0 and state.turn_count % 5 == 0:
-        markup = feedback_nudge_keyboard()
-
     try:
         mp3_bytes = await speak(reply_text)
         ogg_reply = mp3_to_ogg(mp3_bytes)
@@ -53,11 +49,11 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             chat_id=update.effective_chat.id,
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
             caption=f"🤖 Покупатель: {reply_text}",
-            reply_markup=markup,
+            reply_markup=training_keyboard(),
         )
     except Exception:
         logger.warning("voice | send_voice failed for user_id=%d, falling back to text", user_id)
         await update.message.reply_text(
             f"🤖 Покупатель: {reply_text}",
-            reply_markup=markup,
+            reply_markup=training_keyboard(),
         )

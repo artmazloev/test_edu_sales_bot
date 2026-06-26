@@ -7,7 +7,7 @@ from telegram.ext import (
     filters,
 )
 from config import TELEGRAM_TOKEN, LOG_LEVEL
-from handlers.commands import start, reset, feedback, handle_callback
+from handlers.commands import start, reset, feedback, handle_callback, setup_commands
 from handlers.voice import handle_voice
 from handlers.text import handle_text
 
@@ -21,8 +21,12 @@ logging.getLogger("telegram").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
+async def post_init(app: Application) -> None:
+    await setup_commands(app)
+
+
 def main() -> None:
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
+    app = Application.builder().token(TELEGRAM_TOKEN).post_init(post_init).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("reset", reset))

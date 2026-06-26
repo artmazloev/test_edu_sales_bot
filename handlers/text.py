@@ -1,7 +1,7 @@
 import random
 import logging
 from io import BytesIO
-from telegram import Update, InputFile
+from telegram import Update, InputFile, ChatAction
 from telegram.ext import ContextTypes
 from openai import APIConnectionError, APITimeoutError
 from state import manager as state_manager
@@ -60,6 +60,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     if state.mode == "coaching":
         try:
+            await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
             if not state.coaching_started:
                 await update.message.reply_text("⏳ Анализирую диалог...")
                 fb = await get_coaching_feedback(state)
@@ -74,6 +75,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             await update.message.reply_text(_NETWORK_ERROR_MSG)
         return
 
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
     try:
         reply_text = await get_buyer_reply(state, text)

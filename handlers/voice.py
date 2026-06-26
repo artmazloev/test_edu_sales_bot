@@ -1,6 +1,6 @@
 import random
 import logging
-from telegram import Update
+from telegram import Update, ChatAction
 from telegram.ext import ContextTypes
 from telegram import InputFile
 from io import BytesIO
@@ -28,6 +28,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     tg_file = await context.bot.get_file(voice.file_id)
     ogg_bytes = bytes(await tg_file.download_as_bytearray())
 
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
     try:
         transcript = await transcribe(ogg_bytes)

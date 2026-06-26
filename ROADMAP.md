@@ -19,6 +19,9 @@
 | [#9](https://github.com/artmazloev/test_edu_sales_bot/issues/9) | Лимит диалога MAX_TURNS=15 + счётчик ходов |
 | [#10](https://github.com/artmazloev/test_edu_sales_bot/issues/10) | ChatAction RECORD_VOICE / TYPING пока бот думает |
 | [#12](https://github.com/artmazloev/test_edu_sales_bot/issues/12) | Приветственная фраза покупателя при старте сценария |
+| [#11](https://github.com/artmazloev/test_edu_sales_bot/issues/11) | Реакция покупателя на молчание >2 мин через JobQueue |
+| [#13](https://github.com/artmazloev/test_edu_sales_bot/issues/13) | Кнопка «Переиграть сценарий» после коучинга |
+| [#16](https://github.com/artmazloev/test_edu_sales_bot/issues/16) | Расширенная ОС: до 3 ошибок с цитатами и альтернативами |
 | —  | Фоллбэк на текст при заблокированных голосовых + инструкция |
 | —  | Текст → аудио+подпись; голос → только аудио |
 | —  | Два сценария: премиум-смартфон (технарь) и смартфон в подарок |
@@ -29,9 +32,6 @@
 ## В работе / Следующий спринт 🔜
 
 ### UX и диалог
-- [ ] [#13](https://github.com/artmazloev/test_edu_sales_bot/issues/13) Кнопка «Повторить сценарий» после коучинга
-- [ ] [#16](https://github.com/artmazloev/test_edu_sales_bot/issues/16) Расширить разбор ОС: 3–5 конкретных ошибок с цитатами
-- [ ] [#11](https://github.com/artmazloev/test_edu_sales_bot/issues/11) Реакция покупателя на долгое молчание (>2 мин) через JobQueue
 - [ ] Возможность переспросить покупателя без потери контекста (`/retry`)
 
 ### Коучинг

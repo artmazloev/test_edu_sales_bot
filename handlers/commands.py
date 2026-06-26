@@ -70,6 +70,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 )
                 return
             state.mode = "coaching"
+            state.coaching_started = False
             await query.message.reply_text("⏳ Анализирую диалог...")
             fb = await get_coaching_feedback(state)
             await query.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())

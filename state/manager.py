@@ -9,6 +9,8 @@ class UserState:
     scenario_key: str = DEFAULT_SCENARIO
     history: list[dict] = field(default_factory=list)
     turn_count: int = 0
+    coaching_history: list[dict] = field(default_factory=list)
+    coaching_started: bool = False
 
 _store: dict[int, UserState] = {}
 

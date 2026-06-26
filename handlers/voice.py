@@ -7,7 +7,7 @@ from io import BytesIO
 from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
-from services.dialogue import get_buyer_reply, get_coaching_feedback
+from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
 from keyboards import feedback_nudge_keyboard, mode_keyboard
 from phrases import THINKING_PHRASES
 
@@ -28,8 +28,15 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     if state.mode == "coaching":
         await thinking_msg.delete()
-        fb = await get_coaching_feedback(state)
-        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
+        if not state.coaching_started:
+            await update.message.reply_text("⏳ Анализирую диалог...")
+            fb = await get_coaching_feedback(state)
+            await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
+        else:
+            thinking_msg2 = await update.message.reply_text("💭 Тренер обдумывает ответ...")
+            reply = await get_coaching_reply(state, transcript)
+            await thinking_msg2.delete()
+            await update.message.reply_text(reply, reply_markup=mode_keyboard())
         return
 
     reply_text = await get_buyer_reply(state, transcript)

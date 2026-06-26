@@ -15,6 +15,10 @@
 | [#15](https://github.com/artmazloev/test_edu_sales_bot/issues/15) | Убрать кнопку ОС из inline-клавиатуры после каждого сообщения |
 | [#17](https://github.com/artmazloev/test_edu_sales_bot/issues/17) | Кнопка «Завершить и получить ОС» в постоянной Reply Keyboard |
 | [#18](https://github.com/artmazloev/test_edu_sales_bot/issues/18) | Переименовать «Сбросить диалог» → «Начать сначала» |
+| [#7](https://github.com/artmazloev/test_edu_sales_bot/issues/7) | Обработка сетевых ошибок: авто-retry + дружелюбное сообщение |
+| [#9](https://github.com/artmazloev/test_edu_sales_bot/issues/9) | Лимит диалога MAX_TURNS=15 + счётчик ходов |
+| [#10](https://github.com/artmazloev/test_edu_sales_bot/issues/10) | ChatAction RECORD_VOICE / TYPING пока бот думает |
+| [#12](https://github.com/artmazloev/test_edu_sales_bot/issues/12) | Приветственная фраза покупателя при старте сценария |
 | —  | Фоллбэк на текст при заблокированных голосовых + инструкция |
 | —  | Текст → аудио+подпись; голос → только аудио |
 | —  | Два сценария: премиум-смартфон (технарь) и смартфон в подарок |
@@ -25,10 +29,6 @@
 ## В работе / Следующий спринт 🔜
 
 ### UX и диалог
-- [ ] [#7](https://github.com/artmazloev/test_edu_sales_bot/issues/7) Обработка сетевых ошибок (таймаут, потеря соединения) — friendly retry message
-- [ ] [#9](https://github.com/artmazloev/test_edu_sales_bot/issues/9) Ограничение диалога (MAX_TURNS ~15) + счётчик ходов «ход 3 из ~15»
-- [ ] [#10](https://github.com/artmazloev/test_edu_sales_bot/issues/10) ChatAction: TYPING / RECORD_VOICE пока бот «думает»
-- [ ] [#12](https://github.com/artmazloev/test_edu_sales_bot/issues/12) Приветственное сообщение от покупателя при старте сценария — бот первым задаёт тон
 - [ ] [#13](https://github.com/artmazloev/test_edu_sales_bot/issues/13) Кнопка «Повторить сценарий» после коучинга
 - [ ] [#16](https://github.com/artmazloev/test_edu_sales_bot/issues/16) Расширить разбор ОС: 3–5 конкретных ошибок с цитатами
 - [ ] [#11](https://github.com/artmazloev/test_edu_sales_bot/issues/11) Реакция покупателя на долгое молчание (>2 мин) через JobQueue

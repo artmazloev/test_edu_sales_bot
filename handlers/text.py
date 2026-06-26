@@ -11,7 +11,7 @@ from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coachi
 from services.openai_client import speak
 from services.audio import mp3_to_ogg
 from services.silence import schedule_silence_job, cancel_silence_job
-from keyboards import training_keyboard, mode_keyboard, scenario_keyboard
+from keyboards import training_keyboard, mode_keyboard, scenario_keyboard, BTN_FINISH, BTN_SCENARIO, BTN_RESET
 from phrases import THINKING_PHRASES
 
 logger = logging.getLogger(__name__)
@@ -20,17 +20,13 @@ _NETWORK_ERROR_MSG = (
     "⚠️ Нет связи с сервером. Проверьте интернет и попробуйте ещё раз."
 )
 
-REPLY_KB_FINISH = "🏁 Завершить и получить ОС"
-REPLY_KB_SCENARIO = "🔄 Сменить сценарий"
-REPLY_KB_RESET = "🔁 Начать сначала"
-
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     state = state_manager.get_or_create(user_id)
-    text = update.message.text
+    text = update.message.text.strip()
 
-    if text == REPLY_KB_FINISH:
+    if text == BTN_FINISH:
         if state.turn_count == 0:
             await update.message.reply_text(
                 "Сначала проведите несколько реплик в тренировке, потом запросите обратную связь."
@@ -44,14 +40,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         return
 
-    if text == REPLY_KB_SCENARIO:
+    if text == BTN_SCENARIO:
         await update.message.reply_text(
             "Выберите сценарий (текущий диалог будет сброшен):",
             reply_markup=scenario_keyboard(),
         )
         return
 
-    if text == REPLY_KB_RESET:
+    if text == BTN_RESET:
         state_manager.reset(user_id)
         logger.info("reset via keyboard | user_id=%d", user_id)
         await update.message.reply_text(

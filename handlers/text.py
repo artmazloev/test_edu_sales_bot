@@ -19,7 +19,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if state.mode == "coaching":
         await update.message.reply_text("⏳ Анализирую диалог...")
         fb = await get_coaching_feedback(state)
-        await update.message.reply_text(fb, reply_markup=mode_keyboard())
+        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         return
 
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))

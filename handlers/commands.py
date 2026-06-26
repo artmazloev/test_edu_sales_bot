@@ -34,7 +34,7 @@ async def feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = state_manager.get_or_create(user_id)
     await update.message.reply_text("⏳ Анализирую диалог...")
     fb = await get_coaching_feedback(state)
-    await update.message.reply_text(fb, reply_markup=mode_keyboard())
+    await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
 
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -72,7 +72,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             state.mode = "coaching"
             await query.message.reply_text("⏳ Анализирую диалог...")
             fb = await get_coaching_feedback(state)
-            await query.message.reply_text(fb, reply_markup=mode_keyboard())
+            await query.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         else:
             state.mode = "training"
             await query.message.reply_text(

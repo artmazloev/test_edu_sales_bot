@@ -29,7 +29,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if state.mode == "coaching":
         await thinking_msg.delete()
         fb = await get_coaching_feedback(state)
-        await update.message.reply_text(fb, reply_markup=mode_keyboard())
+        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         return
 
     reply_text = await get_buyer_reply(state, transcript)

@@ -49,3 +49,4 @@ SCENARIOS: dict[str, dict] = {
 }
 
 DEFAULT_SCENARIO = "smartphone_premium"
+MAX_TURNS = 15

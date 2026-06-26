@@ -5,6 +5,7 @@ from telegram.ext import ContextTypes
 from telegram import InputFile
 from io import BytesIO
 from openai import APIConnectionError, APITimeoutError
+from config import MAX_TURNS
 from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
@@ -86,3 +87,20 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         else:
             logger.exception("voice | send_voice failed for user_id=%d", user_id)
             await update.message.reply_text(reply_text, reply_markup=training_keyboard())
+
+    # Turn counter + auto-finish when limit reached
+    turns = state.turn_count
+    if turns >= MAX_TURNS:
+        state.mode = "coaching"
+        state.coaching_started = False
+        await update.message.reply_text(
+            f"🏁 Диалог завершён — достигнут лимит {MAX_TURNS} ходов.\n⏳ Анализирую диалог..."
+        )
+        fb = await get_coaching_feedback(state)
+        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
+    else:
+        remaining = MAX_TURNS - turns
+        await update.message.reply_text(
+            f"_Ход {turns} из {MAX_TURNS} — осталось {remaining}_",
+            parse_mode="Markdown",
+        )

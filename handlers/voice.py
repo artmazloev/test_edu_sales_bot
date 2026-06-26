@@ -28,16 +28,21 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     reply_text = await get_buyer_reply(state, transcript)
 
-    mp3_bytes = await speak(reply_text)
-    ogg_reply = mp3_to_ogg(mp3_bytes)
-
     markup = None
     if state.turn_count > 0 and state.turn_count % 5 == 0:
         markup = feedback_nudge_keyboard()
 
-    await context.bot.send_voice(
-        chat_id=update.effective_chat.id,
-        voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
-        caption=f"🤖 Покупатель: {reply_text}",
-        reply_markup=markup,
-    )
+    try:
+        mp3_bytes = await speak(reply_text)
+        ogg_reply = mp3_to_ogg(mp3_bytes)
+        await context.bot.send_voice(
+            chat_id=update.effective_chat.id,
+            voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
+            caption=f"🤖 Покупатель: {reply_text}",
+            reply_markup=markup,
+        )
+    except Exception:
+        await update.message.reply_text(
+            f"🤖 Покупатель: {reply_text}",
+            reply_markup=markup,
+        )

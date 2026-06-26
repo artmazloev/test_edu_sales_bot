@@ -51,9 +51,22 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             caption=f"🤖 Покупатель: {reply_text}",
             reply_markup=training_keyboard(),
         )
-    except Exception:
-        logger.warning("voice | send_voice failed for user_id=%d, falling back to text", user_id)
-        await update.message.reply_text(
-            f"🤖 Покупатель: {reply_text}",
-            reply_markup=training_keyboard(),
-        )
+    except Exception as e:
+        is_forbidden = "voice_messages_forbidden" in str(e).lower()
+        if is_forbidden:
+            logger.warning("voice | send_voice forbidden for user_id=%d", user_id)
+            await update.message.reply_text(
+                "⚠️ У вас отключено получение голосовых сообщений от ботов.\n\n"
+                "Можно:\n"
+                "• Продолжить тренировку *текстом* — просто пишите в чат\n"
+                "• Включить голос: Настройки → Конфиденциальность → Голосовые сообщения → Все\n\n"
+                f"🤖 Покупатель: {reply_text}",
+                parse_mode="Markdown",
+                reply_markup=training_keyboard(),
+            )
+        else:
+            logger.exception("voice | send_voice failed for user_id=%d", user_id)
+            await update.message.reply_text(
+                f"🤖 Покупатель: {reply_text}",
+                reply_markup=training_keyboard(),
+            )

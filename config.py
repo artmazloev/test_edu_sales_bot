@@ -1,10 +1,12 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 SCENARIOS: dict[str, dict] = {
     "smartphone_premium": {

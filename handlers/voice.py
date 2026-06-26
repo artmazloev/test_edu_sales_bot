@@ -1,0 +1,43 @@
+from telegram import Update
+from telegram.ext import ContextTypes
+from telegram import InputFile
+from io import BytesIO
+from state import manager as state_manager
+from services.openai_client import transcribe, speak
+from services.audio import mp3_to_ogg
+from services.dialogue import get_buyer_reply, get_coaching_feedback
+from keyboards import feedback_nudge_keyboard, mode_keyboard
+
+
+async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.effective_user.id
+    state = state_manager.get_or_create(user_id)
+
+    voice = update.message.voice
+    tg_file = await context.bot.get_file(voice.file_id)
+    ogg_bytes = bytes(await tg_file.download_as_bytearray())
+
+    transcript = await transcribe(ogg_bytes)
+
+    await update.message.reply_text(f"🎙 Вы: {transcript}")
+
+    if state.mode == "coaching":
+        fb = await get_coaching_feedback(state)
+        await update.message.reply_text(fb, reply_markup=mode_keyboard())
+        return
+
+    reply_text = await get_buyer_reply(state, transcript)
+
+    mp3_bytes = await speak(reply_text)
+    ogg_reply = mp3_to_ogg(mp3_bytes)
+
+    markup = None
+    if state.turn_count > 0 and state.turn_count % 5 == 0:
+        markup = feedback_nudge_keyboard()
+
+    await context.bot.send_voice(
+        chat_id=update.effective_chat.id,
+        voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
+        caption=f"🤖 Покупатель: {reply_text}",
+        reply_markup=markup,
+    )

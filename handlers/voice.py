@@ -4,12 +4,17 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram import InputFile
 from io import BytesIO
+from openai import APIConnectionError, APITimeoutError
 from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
 from keyboards import training_keyboard, mode_keyboard
 from phrases import THINKING_PHRASES
+
+_NETWORK_ERROR_MSG = (
+    "⚠️ Нет связи с сервером. Проверьте интернет и попробуйте ещё раз."
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,20 +29,36 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     ogg_bytes = bytes(await tg_file.download_as_bytearray())
 
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
-    transcript = await transcribe(ogg_bytes)
+    try:
+        transcript = await transcribe(ogg_bytes)
+    except (APIConnectionError, APITimeoutError):
+        await thinking_msg.delete()
+        logger.warning("voice | transcribe network error user_id=%d", user_id)
+        await update.message.reply_text(_NETWORK_ERROR_MSG)
+        return
 
     if state.mode == "coaching":
-        if not state.coaching_started:
-            await update.message.reply_text("⏳ Анализирую диалог...")
-            fb = await get_coaching_feedback(state)
-            await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
-        else:
-            reply = await get_coaching_reply(state, transcript)
-            await update.message.reply_text(reply, reply_markup=mode_keyboard())
+        try:
+            if not state.coaching_started:
+                await update.message.reply_text("⏳ Анализирую диалог...")
+                fb = await get_coaching_feedback(state)
+                await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
+            else:
+                reply = await get_coaching_reply(state, transcript)
+                await update.message.reply_text(reply, reply_markup=mode_keyboard())
+        except (APIConnectionError, APITimeoutError):
+            logger.warning("voice | coaching network error user_id=%d", user_id)
+            await update.message.reply_text(_NETWORK_ERROR_MSG)
         await thinking_msg.delete()
         return
 
-    reply_text = await get_buyer_reply(state, transcript)
+    try:
+        reply_text = await get_buyer_reply(state, transcript)
+    except (APIConnectionError, APITimeoutError):
+        await thinking_msg.delete()
+        logger.warning("voice | buyer_reply network error user_id=%d", user_id)
+        await update.message.reply_text(_NETWORK_ERROR_MSG, reply_markup=training_keyboard())
+        return
 
     try:
         mp3_bytes = await speak(reply_text)

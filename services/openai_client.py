@@ -51,11 +51,11 @@ async def transcribe(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
     return response.text
 
 
-async def speak(text: str, voice: str = "alloy") -> bytes:
+async def speak(text: str, voice: str = "onyx") -> bytes:
     t0 = time.monotonic()
     response = await _with_retry(
         _client.audio.speech.create,
-        model="tts-1",
+        model="tts-1-hd",
         voice=voice,
         input=text,
         response_format="mp3",

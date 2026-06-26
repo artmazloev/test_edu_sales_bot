@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 from telegram import InputFile
 from io import BytesIO
 from openai import APIConnectionError, APITimeoutError
-from config import MAX_TURNS
+from config import MAX_TURNS, SCENARIOS
 from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
@@ -64,8 +64,9 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text(_NETWORK_ERROR_MSG, reply_markup=training_keyboard())
         return
 
+    tts_voice = SCENARIOS[state.scenario_key].get("tts_voice", "onyx")
     try:
-        mp3_bytes = await speak(reply_text)
+        mp3_bytes = await speak(reply_text, voice=tts_voice)
         ogg_reply = mp3_to_ogg(mp3_bytes)
         await context.bot.send_voice(
             chat_id=update.effective_chat.id,

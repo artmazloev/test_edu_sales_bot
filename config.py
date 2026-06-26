@@ -11,6 +11,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 SCENARIOS: dict[str, dict] = {
     "smartphone_premium": {
         "name": "Смартфон премиум-класса",
+        "tts_voice": "onyx",
         "product": "Смартфоны премиум-сегмента (iPhone 15/16, Samsung Galaxy S24+, Google Pixel 9 Pro) ценой от 80 000 до 150 000 рублей",
         "buyer_role": (
             "Технически грамотный мужчина 28–35 лет, разработчик ПО. "
@@ -31,6 +32,7 @@ SCENARIOS: dict[str, dict] = {
     },
     "smartphone_budget": {
         "name": "Смартфон в подарок",
+        "tts_voice": "nova",
         "product": "Смартфоны среднего сегмента (Samsung A55, Xiaomi 14C, realme 12+) ценой 20 000–40 000 рублей",
         "buyer_role": (
             "Женщина 45 лет, покупает смартфон в подарок сыну-студенту. "

@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 from config import SCENARIOS
 from state import manager as state_manager
 from services.dialogue import get_coaching_feedback
-from keyboards import mode_keyboard, scenario_keyboard, training_keyboard, main_reply_keyboard
+from keyboards import mode_keyboard, scenario_keyboard, main_reply_keyboard
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +16,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "👋 Привет! Я бот для тренировки навыков продаж.\n\n"
         "🎯 Отправляйте голосовые или текстовые сообщения — я буду играть роль покупателя.\n"
-        "📊 В любой момент нажмите *«Обратная связь»* — тренер разберёт ваш диалог.\n\n"
+        "🏁 Когда закончите — нажмите *«Завершить и получить ОС»* для разбора диалога.\n\n"
         "Выберите сценарий:",
         parse_mode="Markdown",
         reply_markup=main_reply_keyboard(),
     )
     await update.message.reply_text(
-        "Выберите сценарий:",
+        "👇 Выберите сценарий:",
         reply_markup=scenario_keyboard(),
     )
 
@@ -32,7 +32,7 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state_manager.reset(user_id)
     logger.info("reset | user_id=%d", user_id)
     await update.message.reply_text(
-        "🔄 Диалог сброшен. Выберите сценарий для новой тренировки:",
+        "🔁 Начинаем сначала. Выберите сценарий:",
         reply_markup=scenario_keyboard(),
     )
 
@@ -103,5 +103,5 @@ async def setup_commands(app) -> None:
     await app.bot.set_my_commands([
         BotCommand("start", "Начать заново / выбрать сценарий"),
         BotCommand("feedback", "Получить обратную связь по диалогу"),
-        BotCommand("reset", "Сбросить диалог"),
+        BotCommand("reset", "Начать сначала"),
     ])

@@ -6,8 +6,8 @@ def main_reply_keyboard() -> ReplyKeyboardMarkup:
     """Persistent bottom keyboard shown throughout the session."""
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton("📊 Обратная связь"), KeyboardButton("🔄 Сменить сценарий")],
-            [KeyboardButton("🔁 Сбросить диалог")],
+            [KeyboardButton("🏁 Завершить и получить ОС"), KeyboardButton("🔄 Сменить сценарий")],
+            [KeyboardButton("🔁 Начать сначала")],
         ],
         resize_keyboard=True,
         input_field_placeholder="Скажите что-нибудь покупателю...",
@@ -34,8 +34,5 @@ def scenario_keyboard() -> InlineKeyboardMarkup:
 def training_keyboard() -> InlineKeyboardMarkup:
     """Shown after every buyer reply during training."""
     return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("📊 Получить обратную связь", callback_data="mode:coaching"),
-            InlineKeyboardButton("🔄 Сменить сценарий", callback_data="show:scenarios"),
-        ]
+        [InlineKeyboardButton("🔄 Сменить сценарий", callback_data="show:scenarios")]
     ])

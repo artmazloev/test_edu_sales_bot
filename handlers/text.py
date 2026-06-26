@@ -12,9 +12,9 @@ from phrases import THINKING_PHRASES
 
 logger = logging.getLogger(__name__)
 
-REPLY_KB_FEEDBACK = "📊 Обратная связь"
+REPLY_KB_FINISH = "🏁 Завершить и получить ОС"
 REPLY_KB_SCENARIO = "🔄 Сменить сценарий"
-REPLY_KB_RESET = "🔁 Сбросить диалог"
+REPLY_KB_RESET = "🔁 Начать сначала"
 
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -22,8 +22,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     state = state_manager.get_or_create(user_id)
     text = update.message.text
 
-    # Reply keyboard button handlers
-    if text == REPLY_KB_FEEDBACK:
+    if text == REPLY_KB_FINISH:
         if state.turn_count == 0:
             await update.message.reply_text(
                 "Сначала проведите несколько реплик в тренировке, потом запросите обратную связь."
@@ -47,7 +46,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         state_manager.reset(user_id)
         logger.info("reset via keyboard | user_id=%d", user_id)
         await update.message.reply_text(
-            "🔄 Диалог сброшен. Выберите сценарий:",
+            "🔁 Начинаем сначала. Выберите сценарий:",
             reply_markup=scenario_keyboard(),
         )
         return
@@ -62,15 +61,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         else:
             thinking_msg = await update.message.reply_text("💭 Тренер обдумывает ответ...")
             reply = await get_coaching_reply(state, text)
-            await thinking_msg.delete()
             await update.message.reply_text(reply, reply_markup=mode_keyboard())
+            await thinking_msg.delete()
         return
 
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
     reply_text = await get_buyer_reply(state, text)
-    await thinking_msg.delete()
 
-    # Text input → audio + text caption
     try:
         mp3_bytes = await speak(reply_text)
         ogg_reply = mp3_to_ogg(mp3_bytes)
@@ -80,7 +77,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             caption=f"🤖 {reply_text}",
             reply_markup=training_keyboard(),
         )
+        await thinking_msg.delete()
     except Exception as e:
+        await thinking_msg.delete()
         is_forbidden = "voice_messages_forbidden" in str(e).lower()
         if is_forbidden:
             logger.warning("text | send_voice forbidden for user_id=%d", user_id)

@@ -27,20 +27,17 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     transcript = await transcribe(ogg_bytes)
 
     if state.mode == "coaching":
-        await thinking_msg.delete()
         if not state.coaching_started:
             await update.message.reply_text("⏳ Анализирую диалог...")
             fb = await get_coaching_feedback(state)
             await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         else:
-            thinking_msg2 = await update.message.reply_text("💭 Тренер обдумывает ответ...")
             reply = await get_coaching_reply(state, transcript)
-            await thinking_msg2.delete()
             await update.message.reply_text(reply, reply_markup=mode_keyboard())
+        await thinking_msg.delete()
         return
 
     reply_text = await get_buyer_reply(state, transcript)
-    await thinking_msg.delete()
 
     try:
         mp3_bytes = await speak(reply_text)
@@ -50,7 +47,9 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),
             reply_markup=training_keyboard(),
         )
+        await thinking_msg.delete()
     except Exception as e:
+        await thinking_msg.delete()
         is_forbidden = "voice_messages_forbidden" in str(e).lower()
         if is_forbidden:
             logger.warning("voice | send_voice forbidden for user_id=%d", user_id)

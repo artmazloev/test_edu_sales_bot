@@ -26,7 +26,7 @@ async def _with_retry(fn, *args, label: str = "api", **kwargs):
             await asyncio.sleep(delay)
 
 
-async def chat(messages: list[dict], model: str = "gpt-4o-mini") -> str:
+async def chat(messages: list[dict], model: str = "gpt-4o") -> str:
     t0 = time.monotonic()
     response = await _with_retry(
         _client.chat.completions.create, model=model, messages=messages, label="chat"

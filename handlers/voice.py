@@ -1,6 +1,7 @@
 import random
 import logging
-from telegram import Update, ChatAction
+from telegram import Update
+from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 from telegram import InputFile
 from io import BytesIO

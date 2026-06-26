@@ -1,7 +1,8 @@
 import random
 import logging
 from io import BytesIO
-from telegram import Update, InputFile, ChatAction
+from telegram import Update, InputFile
+from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 from openai import APIConnectionError, APITimeoutError
 from config import MAX_TURNS

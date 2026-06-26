@@ -17,9 +17,12 @@ def main_reply_keyboard() -> ReplyKeyboardMarkup:
 def mode_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🎯 Продолжить тренировку", callback_data="mode:training"),
+            InlineKeyboardButton("🔁 Переиграть сценарий", callback_data="mode:replay"),
             InlineKeyboardButton("🔄 Сменить сценарий", callback_data="show:scenarios"),
-        ]
+        ],
+        [
+            InlineKeyboardButton("🎯 Продолжить тренировку", callback_data="mode:training"),
+        ],
     ])
 
 

@@ -94,6 +94,20 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             await query.message.reply_text("⏳ Анализирую диалог...")
             fb = await get_coaching_feedback(state)
             await query.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
+        elif new_mode == "replay":
+            scenario_key = state.scenario_key
+            state_manager.reset(user_id)
+            state = state_manager.get_or_create(user_id)
+            state.scenario_key = scenario_key
+            scenario = SCENARIOS[scenario_key]
+            logger.info("mode:replay | user_id=%d scenario=%s", user_id, scenario_key)
+            await query.message.reply_text(
+                f"🔁 Переигрываем: *{scenario['name']}*\nПокупатель снова в магазине 👇",
+                parse_mode="Markdown",
+            )
+            await query.message.reply_chat_action("typing")
+            opener = await get_buyer_opener(state)
+            await query.message.reply_text(f"🛒 *Покупатель:* {opener}", parse_mode="Markdown")
         else:
             state.mode = "training"
             logger.info("mode:training | user_id=%d", user_id)

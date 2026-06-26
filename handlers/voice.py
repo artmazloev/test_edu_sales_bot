@@ -10,6 +10,7 @@ from state import manager as state_manager
 from services.openai_client import transcribe, speak
 from services.audio import mp3_to_ogg
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
+from services.silence import schedule_silence_job, cancel_silence_job
 from keyboards import training_keyboard, mode_keyboard
 from phrases import THINKING_PHRASES
 
@@ -91,6 +92,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Turn counter + auto-finish when limit reached
     turns = state.turn_count
     if turns >= MAX_TURNS:
+        cancel_silence_job(context, user_id)
         state.mode = "coaching"
         state.coaching_started = False
         await update.message.reply_text(
@@ -99,6 +101,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         fb = await get_coaching_feedback(state)
         await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
     else:
+        schedule_silence_job(context, user_id, update.effective_chat.id)
         remaining = MAX_TURNS - turns
         await update.message.reply_text(
             f"_Ход {turns} из {MAX_TURNS} — осталось {remaining}_",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Literal
 from config import DEFAULT_SCENARIO
 
@@ -11,6 +12,8 @@ class UserState:
     turn_count: int = 0
     coaching_history: list[dict] = field(default_factory=list)
     coaching_started: bool = False
+    last_message_at: datetime = field(default_factory=datetime.utcnow)
+    silence_job_name: str = ""
 
 _store: dict[int, UserState] = {}
 

@@ -4,7 +4,7 @@ from config import OPENAI_API_KEY
 _client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
-async def chat(messages: list[dict], model: str = "gpt-4o") -> str:
+async def chat(messages: list[dict], model: str = "gpt-4o-mini") -> str:
     response = await _client.chat.completions.create(
         model=model,
         messages=messages,

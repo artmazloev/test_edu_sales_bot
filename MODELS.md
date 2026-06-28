@@ -14,6 +14,9 @@
 | TTS | SpeechKit TTS | `YANDEX_TTS_VOICE` / per-scenario `tts_voice.yandex` |
 | TTS голос — премиум | `filipp` | `config.py` → `smartphone_premium.tts_voice.yandex` |
 | TTS голос — бюджет | `alena` | `config.py` → `smartphone_budget.tts_voice.yandex` |
+| Темп речи TTS | `1.2` (0.1–3.0) | `YANDEX_TTS_SPEED` |
+
+Список доступных голосов с образцами: <https://yandex.cloud/ru/docs/speechkit/tts/voices>
 
 ---
 

@@ -1,14 +1,14 @@
 import random
 import logging
 from io import BytesIO
-from telegram import Update, InputFile, ChatAction
+from telegram import Update, InputFile
+from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
-from openai import APIConnectionError, APITimeoutError
 from config import MAX_TURNS
 from state import manager as state_manager
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
-from services.openai_client import speak
-from services.audio import mp3_to_ogg
+from services.llm import speak
+from services.errors import LLMNetworkError
 from services.silence import schedule_silence_job, cancel_silence_job
 from keyboards import training_keyboard, mode_keyboard, scenario_keyboard
 from phrases import THINKING_PHRASES
@@ -73,7 +73,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 reply = await get_coaching_reply(state, text)
                 await update.message.reply_text(reply, reply_markup=mode_keyboard())
                 await thinking_msg.delete()
-        except (APIConnectionError, APITimeoutError):
+        except LLMNetworkError:
             logger.warning("text | coaching network error user_id=%d", user_id)
             await update.message.reply_text(_NETWORK_ERROR_MSG)
         return
@@ -82,15 +82,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     thinking_msg = await update.message.reply_text(random.choice(THINKING_PHRASES))
     try:
         reply_text = await get_buyer_reply(state, text)
-    except (APIConnectionError, APITimeoutError):
+    except LLMNetworkError:
         await thinking_msg.delete()
         logger.warning("text | buyer_reply network error user_id=%d", user_id)
         await update.message.reply_text(_NETWORK_ERROR_MSG, reply_markup=training_keyboard())
         return
 
     try:
-        mp3_bytes = await speak(reply_text)
-        ogg_reply = mp3_to_ogg(mp3_bytes)
+        ogg_reply = await speak(reply_text)
         await context.bot.send_voice(
             chat_id=update.effective_chat.id,
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),

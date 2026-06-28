@@ -26,14 +26,17 @@ MAX_VOICE_SECONDS = 29
 
 _RETRYABLE = (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.RemoteProtocolError)
 _RETRY_DELAYS = (2, 5, 10)
-_TIMEOUT = httpx.Timeout(60.0)
+# Короткий connect для всех вызовов — недоступный хост падает быстро, а не висит.
+_CONNECT_TIMEOUT = 10.0
+_TIMEOUT = httpx.Timeout(60.0, connect=_CONNECT_TIMEOUT)         # chat: запас на генерацию
+_SPEECH_TIMEOUT = httpx.Timeout(15.0, connect=_CONNECT_TIMEOUT)  # STT/TTS: короче, чтобы не залипать
 
 
-async def _request(method: str, url: str, *, label: str, **kwargs) -> httpx.Response:
+async def _request(method: str, url: str, *, label: str, timeout: httpx.Timeout | None = None, **kwargs) -> httpx.Response:
     """Выполнить запрос с ретраями на сетевых ошибках, как в openai_client._with_retry."""
     for attempt, delay in enumerate((*_RETRY_DELAYS, None), start=1):
         try:
-            async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+            async with httpx.AsyncClient(timeout=timeout or _TIMEOUT) as client:
                 response = await client.request(method, url, **kwargs)
             response.raise_for_status()
             return response
@@ -73,7 +76,7 @@ async def transcribe(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
     t0 = time.monotonic()
     params = {"topic": "general", "lang": YANDEX_STT_LANG, "folderId": YANDEX_FOLDER_ID}
     response = await _request(
-        "POST", _STT_URL, label="transcribe",
+        "POST", _STT_URL, label="transcribe", timeout=_SPEECH_TIMEOUT,
         params=params, headers=_AUTH_HEADERS, content=audio_bytes,
     )
     text = response.json().get("result", "")
@@ -93,7 +96,7 @@ async def speak(text: str, voice: str | None = None) -> bytes:
         "folderId": YANDEX_FOLDER_ID,
     }
     response = await _request(
-        "POST", _TTS_URL, label="speak", data=form, headers=_AUTH_HEADERS,
+        "POST", _TTS_URL, label="speak", timeout=_SPEECH_TIMEOUT, data=form, headers=_AUTH_HEADERS,
     )
     audio = response.content
     elapsed = time.monotonic() - t0

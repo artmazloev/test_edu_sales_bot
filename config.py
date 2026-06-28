@@ -5,13 +5,30 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Выбор провайдера моделей: "yandex" (по умолчанию) или "openai".
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "yandex").lower()
+
+if LLM_PROVIDER == "openai":
+    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+elif LLM_PROVIDER == "yandex":
+    YANDEX_API_KEY = os.environ["YANDEX_API_KEY"]
+    YANDEX_FOLDER_ID = os.environ["YANDEX_FOLDER_ID"]
+    # Тариф модели: "yandexgpt" (Pro) или "yandexgpt-lite".
+    YANDEX_GPT_MODEL = os.getenv("YANDEX_GPT_MODEL", "yandexgpt")
+    YANDEX_TTS_VOICE = os.getenv("YANDEX_TTS_VOICE", "filipp")
+    YANDEX_STT_LANG = os.getenv("YANDEX_STT_LANG", "ru-RU")
+else:
+    raise RuntimeError(
+        f"Неизвестный LLM_PROVIDER={LLM_PROVIDER!r}. Допустимо: 'yandex' или 'openai'."
+    )
 
 SCENARIOS: dict[str, dict] = {
     "smartphone_premium": {
         "name": "Смартфон премиум-класса",
-        "tts_voice": "onyx",
+        # Мужской голос покупателя по провайдерам.
+        "tts_voice": {"openai": "onyx", "yandex": "filipp"},
         "product": "Смартфоны премиум-сегмента (iPhone 15/16, Samsung Galaxy S24+, Google Pixel 9 Pro) ценой от 80 000 до 150 000 рублей",
         "buyer_role": (
             "Технически грамотный мужчина 28–35 лет, разработчик ПО. "
@@ -32,7 +49,8 @@ SCENARIOS: dict[str, dict] = {
     },
     "smartphone_budget": {
         "name": "Смартфон в подарок",
-        "tts_voice": "nova",
+        # Женский голос покупателя по провайдерам.
+        "tts_voice": {"openai": "nova", "yandex": "alena"},
         "product": "Смартфоны среднего сегмента (Samsung A55, Xiaomi 14C, realme 12+) ценой 20 000–40 000 рублей",
         "buyer_role": (
             "Женщина 45 лет, покупает смартфон в подарок сыну-студенту. "
@@ -52,3 +70,11 @@ SCENARIOS: dict[str, dict] = {
 
 DEFAULT_SCENARIO = "smartphone_premium"
 MAX_TURNS = 15
+
+
+def tts_voice_for(scenario_key: str) -> str | None:
+    """Голос TTS для сценария под активный провайдер (None → дефолт бэкенда)."""
+    voices = SCENARIOS[scenario_key].get("tts_voice")
+    if isinstance(voices, dict):
+        return voices.get(LLM_PROVIDER)
+    return voices

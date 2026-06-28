@@ -3,7 +3,7 @@ from config import SCENARIOS
 from state.manager import UserState
 from prompts.buyer import build_buyer_prompt
 from prompts.coach import COACH_PROMPT, COACH_QA_PROMPT
-from services.openai_client import chat
+from services.llm import chat
 
 logger = logging.getLogger(__name__)
 

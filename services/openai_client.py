@@ -3,6 +3,8 @@ import logging
 import time
 from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, RateLimitError
 from config import OPENAI_API_KEY
+from services.audio import mp3_to_ogg
+from services.errors import LLMNetworkError
 
 logger = logging.getLogger(__name__)
 _client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -10,6 +12,9 @@ _client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 _RETRYABLE = (APIConnectionError, APITimeoutError)
 _MAX_RETRIES = 3
 _RETRY_DELAYS = (2, 5, 10)
+
+# Whisper не имеет жёсткого лимита по длине голосового — проверка отключена.
+MAX_VOICE_SECONDS = None
 
 
 async def _with_retry(fn, *args, label: str = "api", **kwargs):
@@ -21,7 +26,7 @@ async def _with_retry(fn, *args, label: str = "api", **kwargs):
         except _RETRYABLE as exc:
             if delay is None:
                 logger.error("%s | attempt=%d failed permanently: %s", label, attempt, exc)
-                raise
+                raise LLMNetworkError(str(exc)) from exc
             logger.warning("%s | attempt=%d network error, retry in %ds: %s", label, attempt, delay, exc)
             await asyncio.sleep(delay)
 
@@ -51,16 +56,18 @@ async def transcribe(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
     return response.text
 
 
-async def speak(text: str, voice: str = "onyx") -> bytes:
+async def speak(text: str, voice: str | None = "onyx") -> bytes:
+    """Возвращает готовые OGG/Opus байты (mp3 от OpenAI конвертируется внутри)."""
     t0 = time.monotonic()
     response = await _with_retry(
         _client.audio.speech.create,
         model="tts-1-hd",
-        voice=voice,
+        voice=voice or "onyx",
         input=text,
         response_format="mp3",
         label="speak",
     )
+    ogg = mp3_to_ogg(response.content)
     elapsed = time.monotonic() - t0
-    logger.info("speak | elapsed=%.2fs bytes=%d", elapsed, len(response.content))
-    return response.content
+    logger.info("speak | elapsed=%.2fs bytes=%d", elapsed, len(ogg))
+    return ogg

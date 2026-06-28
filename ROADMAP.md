@@ -29,11 +29,11 @@
 | —  | Текст → аудио+подпись; голос → только аудио |
 | —  | Два сценария: премиум-смартфон (технарь) и смартфон в подарок |
 | —  | Переключение модели на gpt-4o-mini для экономичного тестирования |
-| —  | Версия на моделях Яндекса (YandexGPT Pro + SpeechKit) с переключателем `LLM_PROVIDER` |
-| —  | Голос покупателя per-scenario для Яндекса (filipp/alena) + фолбэк `YANDEX_TTS_VOICE` |
-| —  | Настраиваемый темп речи SpeechKit (`YANDEX_TTS_SPEED`, default 1.2) |
-| —  | Мягкая обработка длинных голосовых (>30 c) для SpeechKit: предупреждение вместо ошибки |
-| —  | Провайдер-зависимые таймауты SpeechKit — быстрый отказ при недоступности вместо зависания |
+| [#25](https://github.com/artmazloev/test_edu_sales_bot/issues/25) | Версия на моделях Яндекса (YandexGPT Pro + SpeechKit) с переключателем `LLM_PROVIDER` |
+| [#26](https://github.com/artmazloev/test_edu_sales_bot/issues/26) | Голос покупателя per-scenario для Яндекса (filipp/alena) + фолбэк `YANDEX_TTS_VOICE` |
+| [#27](https://github.com/artmazloev/test_edu_sales_bot/issues/27) | Настраиваемый темп речи SpeechKit (`YANDEX_TTS_SPEED`, default 1.2) |
+| [#28](https://github.com/artmazloev/test_edu_sales_bot/issues/28) | Мягкая обработка длинных голосовых (>30 c) для SpeechKit: предупреждение вместо ошибки |
+| [#29](https://github.com/artmazloev/test_edu_sales_bot/issues/29) | Провайдер-зависимые таймауты SpeechKit — быстрый отказ при недоступности вместо зависания |
 
 ---
 

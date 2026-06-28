@@ -13,6 +13,9 @@ _RETRYABLE = (APIConnectionError, APITimeoutError)
 _MAX_RETRIES = 3
 _RETRY_DELAYS = (2, 5, 10)
 
+# Whisper не имеет жёсткого лимита по длине голосового — проверка отключена.
+MAX_VOICE_SECONDS = None
+
 
 async def _with_retry(fn, *args, label: str = "api", **kwargs):
     for attempt, delay in enumerate((*_RETRY_DELAYS, None), start=1):

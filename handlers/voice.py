@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 from io import BytesIO
 from config import MAX_TURNS
 from state import manager as state_manager
-from services.llm import transcribe, speak
+from services.llm import transcribe, speak, MAX_VOICE_SECONDS
 from services.errors import LLMNetworkError
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
 from services.silence import schedule_silence_job, cancel_silence_job
@@ -26,6 +26,18 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     logger.info("voice | user_id=%d mode=%s", user_id, state.mode)
 
     voice = update.message.voice
+
+    # SpeechKit (короткое распознавание) принимает аудио до ~30 c. Проверяем длину
+    # заранее по voice.duration, не скачивая файл. Для Whisper лимит не задан (None).
+    if MAX_VOICE_SECONDS and voice.duration > MAX_VOICE_SECONDS:
+        logger.info("voice | too long user_id=%d duration=%ds", user_id, voice.duration)
+        await update.message.reply_text(
+            "🎙️ Голосовое длиннее ~30 секунд — распознавание его не обработает.\n"
+            "Запишите реплику покороче или напишите текстом.",
+            reply_markup=training_keyboard(),
+        )
+        return
+
     tg_file = await context.bot.get_file(voice.file_id)
     ogg_bytes = bytes(await tg_file.download_as_bytearray())
 

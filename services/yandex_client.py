@@ -21,6 +21,9 @@ _TTS_URL = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize"
 
 _AUTH_HEADERS = {"Authorization": f"Api-Key {YANDEX_API_KEY}"}
 
+# Лимит синхронного распознавания SpeechKit (~30 c), с запасом.
+MAX_VOICE_SECONDS = 29
+
 _RETRYABLE = (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.RemoteProtocolError)
 _RETRY_DELAYS = (2, 5, 10)
 _TIMEOUT = httpx.Timeout(60.0)

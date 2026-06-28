@@ -89,6 +89,7 @@ python bot.py
 | `YANDEX_FOLDER_ID` | ID каталога Yandex Cloud |
 | `YANDEX_GPT_MODEL` | Тариф модели: `yandexgpt` (Pro, по умолчанию) или `yandexgpt-lite` |
 | `YANDEX_TTS_VOICE` | Голос SpeechKit TTS (default: `filipp`) |
+| `YANDEX_TTS_SPEED` | Темп синтеза: `0.1`–`3.0`, по умолчанию `1.2` (живее, чем дефолтный 1.0) |
 | `YANDEX_STT_LANG` | Язык распознавания/синтеза (default: `ru-RU`) |
 
 **Для `LLM_PROVIDER=openai`:**

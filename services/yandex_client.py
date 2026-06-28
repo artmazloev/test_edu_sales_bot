@@ -9,6 +9,7 @@ from config import (
     YANDEX_FOLDER_ID,
     YANDEX_GPT_MODEL,
     YANDEX_TTS_VOICE,
+    YANDEX_TTS_SPEED,
     YANDEX_STT_LANG,
 )
 from services.errors import LLMNetworkError
@@ -91,6 +92,7 @@ async def speak(text: str, voice: str | None = None) -> bytes:
     form = {
         "text": text,
         "voice": voice or YANDEX_TTS_VOICE,
+        "speed": YANDEX_TTS_SPEED,
         "lang": YANDEX_STT_LANG,
         "format": "oggopus",
         "folderId": YANDEX_FOLDER_ID,

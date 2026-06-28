@@ -18,6 +18,8 @@ elif LLM_PROVIDER == "yandex":
     # Тариф модели: "yandexgpt" (Pro) или "yandexgpt-lite".
     YANDEX_GPT_MODEL = os.getenv("YANDEX_GPT_MODEL", "yandexgpt")
     YANDEX_TTS_VOICE = os.getenv("YANDEX_TTS_VOICE", "filipp")
+    # Темп синтеза SpeechKit: 0.1–3.0, по умолчанию 1.0. 1.2 — заметно живее.
+    YANDEX_TTS_SPEED = os.getenv("YANDEX_TTS_SPEED", "1.2")
     YANDEX_STT_LANG = os.getenv("YANDEX_STT_LANG", "ru-RU")
 else:
     raise RuntimeError(

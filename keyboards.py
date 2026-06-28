@@ -1,13 +1,17 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from config import SCENARIOS
 
+BTN_FINISH = "🏁 Завершить и получить ОС"
+BTN_SCENARIO = "🔄 Сменить сценарий"
+BTN_RESET = "🔁 Начать сначала"
+
 
 def main_reply_keyboard() -> ReplyKeyboardMarkup:
     """Persistent bottom keyboard shown throughout the session."""
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton("🏁 Завершить и получить ОС"), KeyboardButton("🔄 Сменить сценарий")],
-            [KeyboardButton("🔁 Начать сначала")],
+            [KeyboardButton(BTN_FINISH), KeyboardButton(BTN_SCENARIO)],
+            [KeyboardButton(BTN_RESET)],
         ],
         resize_keyboard=True,
         input_field_placeholder="Скажите что-нибудь покупателю...",

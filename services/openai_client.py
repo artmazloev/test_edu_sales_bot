@@ -31,7 +31,7 @@ async def _with_retry(fn, *args, label: str = "api", **kwargs):
             await asyncio.sleep(delay)
 
 
-async def chat(messages: list[dict], model: str = "gpt-4o-mini") -> str:
+async def chat(messages: list[dict], model: str = "gpt-4o") -> str:
     t0 = time.monotonic()
     response = await _with_retry(
         _client.chat.completions.create, model=model, messages=messages, label="chat"
@@ -56,13 +56,13 @@ async def transcribe(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
     return response.text
 
 
-async def speak(text: str, voice: str = "alloy") -> bytes:
+async def speak(text: str, voice: str | None = "onyx") -> bytes:
     """Возвращает готовые OGG/Opus байты (mp3 от OpenAI конвертируется внутри)."""
     t0 = time.monotonic()
     response = await _with_retry(
         _client.audio.speech.create,
-        model="tts-1",
-        voice=voice,
+        model="tts-1-hd",
+        voice=voice or "onyx",
         input=text,
         response_format="mp3",
         label="speak",

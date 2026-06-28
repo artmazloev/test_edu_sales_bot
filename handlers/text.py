@@ -4,13 +4,13 @@ from io import BytesIO
 from telegram import Update, InputFile
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
-from config import MAX_TURNS
 from state import manager as state_manager
 from services.dialogue import get_buyer_reply, get_coaching_feedback, get_coaching_reply
 from services.llm import speak
 from services.errors import LLMNetworkError
 from services.silence import schedule_silence_job, cancel_silence_job
-from keyboards import training_keyboard, mode_keyboard, scenario_keyboard
+from config import MAX_TURNS, tts_voice_for
+from keyboards import training_keyboard, mode_keyboard, scenario_keyboard, BTN_FINISH, BTN_SCENARIO, BTN_RESET
 from phrases import THINKING_PHRASES
 
 logger = logging.getLogger(__name__)
@@ -19,17 +19,13 @@ _NETWORK_ERROR_MSG = (
     "⚠️ Нет связи с сервером. Проверьте интернет и попробуйте ещё раз."
 )
 
-REPLY_KB_FINISH = "🏁 Завершить и получить ОС"
-REPLY_KB_SCENARIO = "🔄 Сменить сценарий"
-REPLY_KB_RESET = "🔁 Начать сначала"
-
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     state = state_manager.get_or_create(user_id)
-    text = update.message.text
+    text = update.message.text.strip()
 
-    if text == REPLY_KB_FINISH:
+    if text == BTN_FINISH:
         if state.turn_count == 0:
             await update.message.reply_text(
                 "Сначала проведите несколько реплик в тренировке, потом запросите обратную связь."
@@ -43,14 +39,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=mode_keyboard())
         return
 
-    if text == REPLY_KB_SCENARIO:
+    if text == BTN_SCENARIO:
         await update.message.reply_text(
             "Выберите сценарий (текущий диалог будет сброшен):",
             reply_markup=scenario_keyboard(),
         )
         return
 
-    if text == REPLY_KB_RESET:
+    if text == BTN_RESET:
         state_manager.reset(user_id)
         logger.info("reset via keyboard | user_id=%d", user_id)
         await update.message.reply_text(
@@ -88,8 +84,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text(_NETWORK_ERROR_MSG, reply_markup=training_keyboard())
         return
 
+    tts_voice = tts_voice_for(state.scenario_key)
     try:
-        ogg_reply = await speak(reply_text)
+        ogg_reply = await speak(reply_text, voice=tts_voice)
         await context.bot.send_voice(
             chat_id=update.effective_chat.id,
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),

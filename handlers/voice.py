@@ -4,7 +4,7 @@ from telegram import Update, InputFile
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 from io import BytesIO
-from config import MAX_TURNS
+from config import MAX_TURNS, tts_voice_for
 from state import manager as state_manager
 from services.llm import transcribe, speak, MAX_VOICE_SECONDS
 from services.errors import LLMNetworkError
@@ -74,8 +74,9 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text(_NETWORK_ERROR_MSG, reply_markup=training_keyboard())
         return
 
+    tts_voice = tts_voice_for(state.scenario_key)
     try:
-        ogg_reply = await speak(reply_text)
+        ogg_reply = await speak(reply_text, voice=tts_voice)
         await context.bot.send_voice(
             chat_id=update.effective_chat.id,
             voice=InputFile(BytesIO(ogg_reply), filename="reply.ogg"),

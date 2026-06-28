@@ -19,13 +19,15 @@ Telegram-бот для тренировки навыков продаж. Бот 
 | Компонент | Яндекс (по умолчанию) | OpenAI |
 |---|---|---|
 | Бот | python-telegram-bot 21 (async) | ← то же |
-| LLM | YandexGPT Pro | GPT-4o-mini |
+| LLM | YandexGPT Pro | GPT-4o |
 | STT | SpeechKit STT | OpenAI Whisper |
-| TTS | SpeechKit TTS (filipp) | OpenAI TTS (alloy) |
+| TTS | SpeechKit TTS (filipp / alena по сценарию) | OpenAI TTS HD (onyx / nova по сценарию) |
 | Аудио | OggOpus напрямую (без ffmpeg) | pydub + ffmpeg |
 | Состояние | In-memory (dict по user_id) | ← то же |
 
-Выбор провайдера — переменная `LLM_PROVIDER=yandex` (по умолчанию) или `openai`. Логика диалога, промпты и сценарии для обоих провайдеров одинаковые.
+Выбор провайдера — переменная `LLM_PROVIDER=yandex` (по умолчанию) или `openai`. Логика диалога, промпты и сценарии для обоих провайдеров одинаковые; голос покупателя задаётся per-scenario для каждого провайдера.
+
+> Для OpenAI-пути экономичная конфигурация (gpt-4o-mini + tts-1 + alloy) задокументирована в [MODELS.md](MODELS.md) для быстрого отката.
 
 ## Установка
 
@@ -142,7 +144,7 @@ prompts/
 Пользователь отправляет OGG
   → ChatAction.RECORD_VOICE (нативный индикатор)
   → STT (транскрипция)            — SpeechKit STT / Whisper
-  → LLM (ответ покупателя)        — YandexGPT Pro / GPT-4o-mini
+  → LLM (ответ покупателя)        — YandexGPT Pro / GPT-4o
   → TTS → OGG/Opus                — SpeechKit TTS (напрямую) / OpenAI TTS → MP3 → OGG
   → send_voice (только аудио, без подписи)
   → счётчик ходов
@@ -160,10 +162,17 @@ prompts/
 **Яндекс** (`LLM_PROVIDER=yandex`) — оплата по прайсу [Yandex Cloud](https://yandex.cloud/ru/prices):
 YandexGPT Pro — за 1000 токенов; SpeechKit STT — за секунды аудио; SpeechKit TTS — за символы синтеза.
 
-**OpenAI** (`LLM_PROVIDER=openai`) — одна сессия (~15 реплик) на GPT-4o-mini ≈ **$0.002**:
+**OpenAI** (`LLM_PROVIDER=openai`) — одна сессия ~15 реплик:
+
+| Конфиг | Сессия ~15 реплик |
+|---|---|
+| Текущий (gpt-4o + tts-1-hd) | ~$0.015 |
+| Экономичный (gpt-4o-mini + tts-1) | ~$0.002 |
 
 | Сервис | Модель | Цена |
 |---|---|---|
-| LLM | gpt-4o-mini | $0.15 / 1M входных токенов |
+| LLM | gpt-4o | $2.50 / 1M входных токенов |
 | STT | whisper-1 | $0.006 / мин |
-| TTS | tts-1 | $15 / 1M символов |
+| TTS | tts-1-hd | $30 / 1M символов |
+
+Инструкция по переключению OpenAI-пути на экономичный режим — в [MODELS.md](MODELS.md).

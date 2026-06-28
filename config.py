@@ -5,8 +5,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Выбор провайдера моделей: "yandex" (по умолчанию) или "openai".
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "yandex").lower()
+
+if LLM_PROVIDER == "openai":
+    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+elif LLM_PROVIDER == "yandex":
+    YANDEX_API_KEY = os.environ["YANDEX_API_KEY"]
+    YANDEX_FOLDER_ID = os.environ["YANDEX_FOLDER_ID"]
+    # Тариф модели: "yandexgpt" (Pro) или "yandexgpt-lite".
+    YANDEX_GPT_MODEL = os.getenv("YANDEX_GPT_MODEL", "yandexgpt")
+    YANDEX_TTS_VOICE = os.getenv("YANDEX_TTS_VOICE", "filipp")
+    YANDEX_STT_LANG = os.getenv("YANDEX_STT_LANG", "ru-RU")
+else:
+    raise RuntimeError(
+        f"Неизвестный LLM_PROVIDER={LLM_PROVIDER!r}. Допустимо: 'yandex' или 'openai'."
+    )
 
 SCENARIOS: dict[str, dict] = {
     "smartphone_premium": {

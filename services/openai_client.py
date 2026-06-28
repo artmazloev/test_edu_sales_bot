@@ -3,6 +3,8 @@ import logging
 import time
 from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, RateLimitError
 from config import OPENAI_API_KEY
+from services.audio import mp3_to_ogg
+from services.errors import LLMNetworkError
 
 logger = logging.getLogger(__name__)
 _client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -21,7 +23,7 @@ async def _with_retry(fn, *args, label: str = "api", **kwargs):
         except _RETRYABLE as exc:
             if delay is None:
                 logger.error("%s | attempt=%d failed permanently: %s", label, attempt, exc)
-                raise
+                raise LLMNetworkError(str(exc)) from exc
             logger.warning("%s | attempt=%d network error, retry in %ds: %s", label, attempt, delay, exc)
             await asyncio.sleep(delay)
 
@@ -52,6 +54,7 @@ async def transcribe(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
 
 
 async def speak(text: str, voice: str = "alloy") -> bytes:
+    """Возвращает готовые OGG/Opus байты (mp3 от OpenAI конвертируется внутри)."""
     t0 = time.monotonic()
     response = await _with_retry(
         _client.audio.speech.create,
@@ -61,6 +64,7 @@ async def speak(text: str, voice: str = "alloy") -> bytes:
         response_format="mp3",
         label="speak",
     )
+    ogg = mp3_to_ogg(response.content)
     elapsed = time.monotonic() - t0
-    logger.info("speak | elapsed=%.2fs bytes=%d", elapsed, len(response.content))
-    return response.content
+    logger.info("speak | elapsed=%.2fs bytes=%d", elapsed, len(ogg))
+    return ogg
